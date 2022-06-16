@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import React, { useEffect, useState } from "react";
+import Utils from "../services/Utils";
 
 function Question({ question, nextQuestion }) {
   const style = {
@@ -6,37 +7,50 @@ function Question({ question, nextQuestion }) {
     border: "2px solid red",
     borderRadius: "10px",
   };
+  const [answer, setAnswer] = useState({
+    option: "",
+    isCorrect: 0,
+  });
+  const [optBtn, setOptBtn] = useState(
+    Array(question.options.length).fill("btn btn-warning mx-1")
+  );
+  const [options, setOptions] = useState([]);
 
-  const optionsBtn = [useRef(), useRef(), useRef(), useRef()];
-  const styleBtn = [
-    useRef("btn btn-warning mx-1"),
-    useRef("btn btn-warning mx-1"),
-    useRef("btn btn-warning mx-1"),
-    useRef("btn btn-warning mx-1"),
-  ];
+  useEffect(() => {
+    setOptions(Utils.randomize(question.options));
+  }, [question.options]);
 
   const checkAnswered = (option, index) => {
-    console.log(styleBtn[0]);
+    let optionsBtn = [...optBtn];
     if (option === question.correct_answer) {
-      optionsBtn[index].current.className = "btn btn-success mx-1";
-      nextQuestion(option, 1);
+      optionsBtn[index] = "btn btn-success mx-1";
+      setAnswer({
+        option: option,
+        isCorrect: 1,
+      });
     } else {
-      nextQuestion(option, 0);
-      optionsBtn[index].current.className = "btn btn-danger mx-1";
-      optionsBtn[
-        question.options.indexOf(question.correct_answer)
-      ].current.className = "btn btn-success mx-1";
+      optionsBtn[index] = "btn btn-danger mx-1";
+      optionsBtn[options.indexOf(question.correct_answer)] =
+        "btn btn-success mx-1";
+      setAnswer({
+        option: option,
+        isCorrect: 0,
+      });
     }
+    setTimeout(() => {
+      setOptBtn(Array(question.options.length).fill("btn btn-warning mx-1"));
+      nextQuestion(answer);
+    }, 2000);
+    setOptBtn(optionsBtn);
   };
 
   return (
     <div className="text-center" style={style}>
       <h3>{question.question}</h3>
-      {question.options.map((option, index) => {
+      {options.map((option, index) => {
         return (
           <button
-            ref={optionsBtn[index]}
-            className="btn btn-warning mx-1"
+            className={optBtn[index]}
             key={index}
             onClick={() => {
               checkAnswered(option, index);

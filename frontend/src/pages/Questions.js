@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Question from "../component/Question";
-import FetchData from "../services/fetchData";
+import Utils from "../services/Utils";
 
 function Questions() {
   const [data, setData] = useState([]);
@@ -16,7 +16,7 @@ function Questions() {
 
   useEffect(() => {
     let tempCategory = [];
-    FetchData.getQuestions().then((res) => {
+    Utils.getQuestions().then((res) => {
       res.data.forEach((el) => {
         if (!tempCategory.includes(el.category)) {
           tempCategory.push(el.category);
@@ -33,16 +33,23 @@ function Questions() {
     setQuestions(tempQuestions);
   };
 
-  const nextQuestion = (answer, incrementCorrectAnswer) => {
-    let copyScore = { ...score };
-    copyScore.correctAnswers += incrementCorrectAnswer;
-    copyScore.questions.push(questions[current].question);
-    copyScore.myAnswer.push(answer);
-    copyScore.questions.push(questions[current].correct_answers);
-    setScore(copyScore);
-    setCurrent(current + 1);
+  const nextQuestion = (answer) => {
+    if (questions.length > current + 1) {
+      let copyScore = { ...score };
+      copyScore.correctAnswers += answer.isCorrect;
+      copyScore.questions.push(questions[current].question);
+      copyScore.myAnswer.push(answer.option);
+      copyScore.questions.push(questions[current].correct_answers);
+      setScore(copyScore);
+      setCurrent(current + 1);
+    } else {
+      showScore();
+    }
   };
 
+  const showScore = () => {
+    console.log(score);
+  };
   return (
     <div className="container-fluid py-3">
       <div className="row">
